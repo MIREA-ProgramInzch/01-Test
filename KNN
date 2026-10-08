@@ -1,0 +1,31 @@
+import numpy as np
+from collections import Counter
+
+
+class KNN:
+    def __init__(self, k=3, metric="euclidean"):
+        self.k = k
+        self.metric = metric
+
+    def fit(self, X, y):
+        self.X_train = np.asarray(X, dtype=float)
+        self.y_train = np.asarray(y)
+        return self
+
+    def _distances(self, x):
+        diff = self.X_train - x
+        if self.metric == "euclidean":
+            return np.sqrt((diff ** 2).sum(axis=1))
+        if self.metric == "manhattan":
+            return np.abs(diff).sum(axis=1)
+        raise ValueError(f"Неизвестная метрика: {self.metric}")
+
+    def _predict_one(self, x):
+        dists = self._distances(x)
+        nearest = np.argsort(dists)[: self.k]
+        labels = self.y_train[nearest]
+        return Counter(labels).most_common(1)[0][0]
+
+    def predict(self, X):
+        X = np.asarray(X, dtype=float)
+        return np.array([self._predict_one(x) for x in X])
